@@ -3,8 +3,6 @@ const ErrorHandler = require("../utils/errorhandler");
 const catchAsyncErrors = require("../middleware/catchAsynchErrors");
 const ApiFeatures = require("../utils/apifeatures");
 
-
-
 //Get All Products
 exports.getAllProducts = catchAsyncErrors(async (req,res)=>{
 
