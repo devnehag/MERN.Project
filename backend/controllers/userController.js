@@ -4,6 +4,7 @@ const User = require("../models/userModels");
 const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail.js");
 const crypto = require("crypto");
+const { doesNotMatch } = require("assert");
 
 //Register a user
 
@@ -31,11 +32,13 @@ exports.loginUser = catchAsyncErrors(async(req,res,next)=>{
         if(!email ||!password){
             return next(new ErrorHandler("Please enter email & password",400));
         }
+        //If user doesn't exits
         const user = await User.findOne({email}).select("+password");
         if(!user){
             return next(new ErrorHandler("Invalid email or password",401));
         }
-        const isPasswordMatched = user.comparePassword(password);
+        //If password doesn't match
+        const isPasswordMatched = await user.comparePassword(password);
         if(!isPasswordMatched){
             return next(new ErrorHandler("Invalid email or password",401));
         }
