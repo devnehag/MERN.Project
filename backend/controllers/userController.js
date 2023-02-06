@@ -5,6 +5,7 @@ const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail.js");
 const crypto = require("crypto");
 const { doesNotMatch } = require("assert");
+const { request } = require("https");
 
 //Register a user
 
@@ -114,3 +115,46 @@ exports.resetPassword = catchAsyncErrors(async(req,res,next)=>{
     await user.save();
     sendToken(user,200,res);
 })
+
+//Get user details
+exports.getUserDetails = catchAsyncErrors(async(req,res,next)=>{
+    const user = await User.findById(req.user.id);
+
+    res.status(200).json({
+        sucess:true,
+        user
+    });
+});
+//update User Password
+exports.updatePassword = catchAsyncErrors(async(req,res,next)=>{
+    const user = await User.findById(req.user.id).select("+password");
+    const isPasswordMatched = await user.comparePassword(req.body.oldPassword);
+        if(!isPasswordMatched){
+            return next(new ErrorHandler("old password is incorrect",401));
+        }
+        if(req.body.newPassword!==req.body.confirmPassword){
+            return next(new ErrorHandler("Password  doesn't match",400));
+        }
+        user.password = req.body.newPassword;
+        await user.save();
+        sendToken(user,200,res);
+    });
+
+    //Update User Profile
+exports.updateProfile = catchAsyncErrors(async(req,res,next)=>{
+   
+    const newUserData ={
+        name:req.body.name,
+        email:req.body.email
+    }
+    const user = await User.findByIdAndUpdate(req.user.id,newUserData,{
+        new:true,
+        runValidators:true, 
+        context: 'query',
+        useFindAndModify: false,      
+    });
+    res.status(200).json({
+        success:true
+    });
+});
+
